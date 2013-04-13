@@ -52,6 +52,20 @@ namespace NamespaceRenamer
         }
       }
 
+			foreach (var t in ass.MainModule.GetTypeReferences())
+			{
+				if (!except.Contains(t.Namespace))
+				{
+					foreach (var r in renames)
+					{
+						if (t.Namespace.StartsWith(r.Source))
+						{
+							t.Namespace = t.Namespace.Replace(r.Source, r.Target);
+						}
+					}
+				}
+			}
+
       ass.Write(assname);
     }
   }
