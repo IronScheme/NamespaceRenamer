@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
+using System.Linq;
 
 namespace NamespaceRenamer
 {
@@ -15,6 +17,13 @@ namespace NamespaceRenamer
 
     static void Main(string[] args)
     {
+			bool refs = false;
+			if (args.Contains("-r"))
+			{
+				refs = true;
+				args = Array.FindAll(args, x => x != "-r");
+			}
+
       var assname = args[0];
       var renames = new List<Transform>();
       var except = new List<string>();
@@ -38,29 +47,34 @@ namespace NamespaceRenamer
 
       var ass = AssemblyDefinition.ReadAssembly(assname);
 
-      foreach (var t in ass.MainModule.Types)
-      {
-        if (!except.Contains(t.Namespace))
-        {
-          foreach (var r in renames)
-          {
-            if (t.Namespace.StartsWith(r.Source))
-            {
-              t.Namespace = t.Namespace.Replace(r.Source, r.Target);
-            }
-          }
-        }
-      }
-
-			foreach (var t in ass.MainModule.GetTypeReferences())
+			if (!refs)
 			{
-				if (!except.Contains(t.Namespace))
+				foreach (var t in ass.MainModule.Types)
 				{
-					foreach (var r in renames)
+					if (!except.Contains(t.Namespace))
 					{
-						if (t.Namespace.StartsWith(r.Source))
+						foreach (var r in renames)
 						{
-							t.Namespace = t.Namespace.Replace(r.Source, r.Target);
+							if (t.Namespace.StartsWith(r.Source))
+							{
+								t.Namespace = t.Namespace.Replace(r.Source, r.Target);
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				foreach (var t in ass.MainModule.GetTypeReferences())
+				{
+					if (!except.Contains(t.Namespace))
+					{
+						foreach (var r in renames)
+						{
+							if (t.Namespace.StartsWith(r.Source))
+							{
+								t.Namespace = t.Namespace.Replace(r.Source, r.Target);
+							}
 						}
 					}
 				}
