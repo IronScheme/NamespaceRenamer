@@ -47,8 +47,12 @@ namespace NamespaceRenamer
 
       var ass = AssemblyDefinition.ReadAssembly(assname);
 
+			
+
 			if (!refs)
 			{
+				Console.WriteLine("Renaming namespaces in {0}", ass.FullName);
+
 				foreach (var t in ass.MainModule.Types)
 				{
 					if (!except.Contains(t.Namespace))
@@ -57,7 +61,9 @@ namespace NamespaceRenamer
 						{
 							if (t.Namespace.StartsWith(r.Source))
 							{
+								var oldtn = t.FullName;
 								t.Namespace = t.Namespace.Replace(r.Source, r.Target);
+								Console.WriteLine("{0} -> {1}", oldtn, t.FullName);
 							}
 						}
 					}
@@ -65,6 +71,8 @@ namespace NamespaceRenamer
 			}
 			else
 			{
+				Console.WriteLine("Renaming imported namespaces in {0}", ass.FullName);
+
 				foreach (var t in ass.MainModule.GetTypeReferences())
 				{
 					if (!except.Contains(t.Namespace))
@@ -73,13 +81,16 @@ namespace NamespaceRenamer
 						{
 							if (t.Namespace.StartsWith(r.Source))
 							{
+								var oldtn = t.FullName;
 								t.Namespace = t.Namespace.Replace(r.Source, r.Target);
+								Console.WriteLine("{0} -> {1}", oldtn, t.FullName);
 							}
 						}
 					}
 				}
 			}
 
+			Console.WriteLine("Saving assembly: {0}", assname);
       ass.Write(assname);
     }
   }
