@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using System.Linq;
+using System.IO;
 
 namespace NamespaceRenamer
 {
@@ -24,7 +25,9 @@ namespace NamespaceRenamer
 				args = Array.FindAll(args, x => x != "-r");
 			}
 
+			
       var assname = args[0];
+			string snk = Directory.GetFiles(Path.GetDirectoryName(Path.GetFullPath(assname)), "*.snk").FirstOrDefault(); 
       var renames = new List<Transform>();
       var except = new List<string>();
 
@@ -91,7 +94,18 @@ namespace NamespaceRenamer
 			}
 
 			Console.WriteLine("Saving assembly: {0}", assname);
-      ass.Write(assname);
+
+			if (!refs && snk != null)
+			{
+				using (var sn = File.OpenRead(snk))
+				{
+					ass.Write(assname, new WriterParameters { StrongNameKeyPair = new System.Reflection.StrongNameKeyPair(sn) });
+				}
+			}
+			else 
+			{ 
+				ass.Write(assname);
+			}
     }
   }
 }
